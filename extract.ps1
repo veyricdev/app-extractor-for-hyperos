@@ -1,5 +1,7 @@
 param(
-    [string]$RomFile
+    [string]$RomFile,
+    [string]$Partition = "system_ext",
+    [string]$App = "Settings.apk"
 )
 
 # === PHAN 1: TU DONG TIM FILE VA KIEM TRA ===
@@ -74,23 +76,24 @@ if (-not (Test-Path "payload.bin")) {
     exit
 }
 
-Write-Host "[2/4] Dang dung payload-dumper xar system_ext..."
-.\payload-dumper-go.exe -p system_ext -o extract_files payload.bin
+Write-Host "[2/4] Dang dung payload-dumper xar $Partition..."
+.\payload-dumper-go.exe -p $Partition -o extract_files payload.bin
 
-Write-Host "[3/4] Dung 7-zip cat ra Settings.apk..."
+Write-Host "[3/4] Dung 7-zip cat ra $App..."
 New-Item -ItemType Directory "extract_files\mount_files" -Force | Out-Null
-& $7z_path e "extract_files\system_ext.img" "Settings.apk" -r -o"extract_files\mount_files" -y | Out-Null
+& $7z_path e "extract_files\$Partition.img" $App -r -o"extract_files\mount_files" -y | Out-Null
 
-$destApkName = "Settings_${codename}_from_${version}.apk"
+$baseAppName = [System.IO.Path]::GetFileNameWithoutExtension($App)
+$destApkName = "${baseAppName}_${codename}_from_${version}.apk"
 $destApkPath = "settings_apks\$destApkName"
 
-if (Test-Path "extract_files\mount_files\Settings.apk") {
-    Copy-Item "extract_files\mount_files\Settings.apk" -Destination $destApkPath -Force
+if (Test-Path "extract_files\mount_files\$App") {
+    Copy-Item "extract_files\mount_files\$App" -Destination $destApkPath -Force
     Write-Host ""
     Write-Host "[HOAN TAT!] Da luu tai: $destApkPath" -ForegroundColor Green
 } else {
     Write-Host ""
-    Write-Error "[LOI TAM TRONG] Khong tim thay Settings.apk!"
+    Write-Error "[LOI TAM TRONG] Khong tim thay $App trong phan vung $Partition!"
 }
 
 Write-Host "[4/4] Don dep chien truong..."

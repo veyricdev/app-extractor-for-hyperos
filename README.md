@@ -1,17 +1,17 @@
-# 📱 Android ROM Settings Extractor
+# 📱 Android Target APK Extractor
 
 *Read this in [Tiếng Việt](README-vi.md)*
 
-A streamlined tool to automatically extract `Settings.apk` from Android OTA Payload ROMs. This project provides **two parallel operation methods**: a **Docker** version for the Linux ecosystem and a **Native Windows (PowerShell)** version that is extremely friendly for non-technical users.
+A streamlined tool to automatically extract *any* desired `.apk` (such as Settings, Security, etc.) from Android OTA Payload ROMs. This project provides **two parallel operation methods**: a **Docker** version for the Linux ecosystem and a **Native Windows (PowerShell)** version that is extremely friendly for non-technical users.
 
 ## ✨ Key Features
 
 - Independent support for 2 platforms: **Native Windows** or **Docker Container**.
 - Automatically extracts `.zip` ROMs to get `payload.bin`.
-- Automatically unpacks and extracts the `system_ext.img` partition.
+- Supports targeted unpacking of any partition (`system`, `system_ext`, `product`, `vendor`, etc.).
 - **Auto-Download Engine:** Automatically downloads `payload-dumper-go` on Windows if it doesn't exist.
-- Extracts `Settings.apk` and automatically renames it based on the input ROM name: `Settings_{codename}_from_{version}.apk`
-- Smart system that automatically cleans up gigabytes of temporary virtual partition data immediately after extraction to save your disk space.
+- Smart recursive scanning to extract any specified APK dynamically, instantly renaming it based on the input ROM name: `{App_Name}_{codename}_from_{version}.apk`
+- Smart system that automatically cleans up gigabytes of temporary virtual partition data immediately after extraction to save disk space.
 
 ---
 
@@ -38,10 +38,24 @@ This method utilizes Windows PowerShell combined with the power of **7-Zip**. Yo
 1. Place your ROM `.zip` file in this same directory (do not extract).
 2. Open Terminal / PowerShell and run the following command for 100% automation:
 
+(By default, it extracts `Settings.apk` from the `system_ext` partition)
 ```powershell
 powershell.exe -ExecutionPolicy Bypass -File .\extract.ps1
 ```
-*(💡 Tip: If you are typing this from Git Bash, make sure to change the backslash to a forward slash like `./extract.ps1`)*
+
+**🔥 Advanced: Extracting Custom Apps**
+You can extract any app by providing command arguments:
+- Example - Extracting Settings app:
+  ```powershell
+  powershell.exe -ExecutionPolicy Bypass -File .\extract.ps1 -Partition "system_ext" -App "Settings.apk"
+  ```
+- Example - Extracting Security app:
+  ```powershell
+  powershell.exe -ExecutionPolicy Bypass -File .\extract.ps1 -Partition "product" -App "MIUISecurityCenterGlobal.apk"
+  ```
+
+*(💡 Tip 1: If using Linux/macOS Native Bash, `extract.sh` script supports identical flags: `./extract.sh -p product -a MIUISecurityCenterGlobal.apk`)*  
+*(💡 Tip 2: If you are typing this from Git Bash, make sure to change the backslash to a forward slash like `./extract.ps1`)*
 
 The whole process of cracking the ROM -> Loading tool -> Extracting APK will run, and the final APK will be saved in the `settings_apks/` folder. Temporary files will be deleted automatically.
 
@@ -61,11 +75,41 @@ Uses a heavily isolated environment to avoid cluttering your host machine.
    ```bash
    make build
    ```
-3. Execute the command to let the machine automatically find the zip file and extract it:
+3. Execute the command to automatically find the zip file and extract `Settings.apk`:
    ```bash
    make extract
    ```
-   *(If there are too many `.zip` files in the folder, specify it: `make extract ROM=filename.zip`)*.
+
+**🔥 Advanced: Extracting Custom Apps via Docker**
+Just like the Windows version, you can specify custom parameters and target different partitions/apps directly when calling `make extract`:
+- Example - Specify a specific `.zip` file (if there are multiple in the folder):
+  ```bash
+  make extract ROM=your_rom_file.zip
+  ```
+- Example - Extract the Security app from the product partition:
+  ```bash
+  make extract PARTITION=product APP=MIUISecurityCenterGlobal.apk
+  ```
+
+---
+
+## 🔍 EXTRA UTILITIES (For PowerShell)
+
+Besides extraction, the toolkit provides two in-depth inspection scripts to analyze the ROM payload before extracting:
+
+### 1. Identify partitions (`list-partitions.ps1`)
+This command lists all the available internal partitions inside your ROM's payload (e.g., boot, system, vendor, product, system_ext...).
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\list-partitions.ps1
+```
+*(To enforce a specific file, append `-InputFile "filename.zip"`)*
+
+### 2. Scan and list APKs (`list-apks.ps1`)
+If you don't know the exact internal name or location of the app you're looking for, this script recursively scans a specific partition and outputs a text file list (e.g., `Danh_Sach_APK_product.txt`) for you to search through manually.
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\list-apks.ps1 -Partition "product"
+```
+*(Replace "product" with whichever partition you want to inspect).*
 
 ---
 
