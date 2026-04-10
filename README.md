@@ -6,7 +6,7 @@ A streamlined tool to automatically extract *any* desired `.apk` (such as Settin
 
 ## ✨ Key Features
 
-- Independent support for 2 platforms: **Native Windows** or **Docker Container**.
+- Independent multi-platform support: Run natively on **Windows**, natively on **Linux**, or via a **Docker Container** (Optimised for macOS).
 - Automatically extracts `.zip` ROMs to get `payload.bin`.
 - Supports targeted unpacking of any partition (`system`, `system_ext`, `product`, `vendor`, etc.).
 - **Auto-Download Engine:** Automatically downloads `payload-dumper-go` on Windows if it doesn't exist.
@@ -61,7 +61,28 @@ The whole process of cracking the ROM -> Loading tool -> Extracting APK will run
 
 ---
 
-## 🐋 METHOD 2: EXTRACT VIA DOCKER (FOR LINUX/WSL2 USERS)
+## 🐧 METHOD 2: EXTRACT ON NATIVE LINUX (BASH SCRIPT)
+
+If you are using Linux (Ubuntu, Arch, etc.), you can run the Bash script directly without having to set up Docker containers.
+
+### 🛠️ Requirements
+- A Linux operating system.
+- `unzip` installed and `payload-dumper-go` binary available in your `$PATH`.
+- `sudo` privileges (required to automatically mount the virtual Android partitions internally).
+
+### ⚙️ Usage
+```bash
+# Default extraction (Settings.apk)
+./extract.sh
+
+# Or extract a custom app like Security
+./extract.sh -p product -a MIUISecurityCenterGlobal.apk
+```
+> **⚠️ Note for macOS users:** Although Macs use Bash/Zsh natively, macOS does not natively support the `mount` command for Android filesystems (ext4/erofs). Attempting to run this natively on macOS will fail. Please use Method 3 (Docker) below instead!
+
+---
+
+## 🐋 METHOD 3: EXTRACT VIA DOCKER (SPECIALLY FOR MACOS & WSL2)
 
 Uses a heavily isolated environment to avoid cluttering your host machine.
 
